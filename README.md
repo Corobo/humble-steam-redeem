@@ -182,7 +182,7 @@ When ownership data is available, Auto-Redeem now skips already-revealed keys wi
 | `skipped.txt` | Games with uncertain ownership (edit and rerun to retry) |
 | `unverifiable.txt` | Revealed keys with no Steam app id, skipped because ownership can't be verified |
 
-Each row is `gamekey,name,key,url` — the URL opens the Humble library page for that order so failed keys can be checked by hand. These files are also used to filter keys on subsequent runs so you don't re-attempt the same keys.
+Each row is `gamekey,name,key,url,reason` — the URL opens the Humble library page for that order so failed keys can be checked by hand, and `reason` says why a key errored (expired, sold out, region locked, …). Keys Humble flags as expired or sold out are skipped without an attempt. These files are also used to filter keys on subsequent runs so you don't re-attempt the same keys.
 
 ## File Structure
 

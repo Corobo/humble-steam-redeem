@@ -87,7 +87,7 @@ class KeyFileManager:
             f.close()
         self._files.clear()
 
-    def write_key(self, code: int, key: dict[str, Any]) -> None:
+    def write_key(self, code: int, key: dict[str, Any], reason: str = "") -> None:
         """Append a key result to the appropriate CSV file."""
         if code in (15, 9):
             filename = "already_owned.csv"
@@ -102,8 +102,10 @@ class KeyFileManager:
         human_name = key.get("human_name", "").replace(",", ".")
         gamekey = key.get("gamekey", "")
         redeemed_key_val = key.get("redeemed_key_val", "")
+        if not reason:
+            reason = _SHORT_ERRORS.get(code, "") if code not in (0, 1) else ""
         self._files[filename].write(
-            f"{gamekey},{human_name},{redeemed_key_val},{humble_order_url(key)}\n"
+            f"{gamekey},{human_name},{redeemed_key_val},{humble_order_url(key)},{reason}\n"
         )
         self._files[filename].flush()
 
@@ -310,6 +312,18 @@ def redeem_steam_keys(
                         seen.add(key["steam_app_id"])
                     seen.add(name)
 
+                # Expired / sold-out keys can't be revealed — don't bother Humble
+                if key.get("is_expired") or key.get("sold_out"):
+                    reason = "expired" if key.get("is_expired") else "sold out"
+                    kfm.write_key(1, key, reason=reason)
+                    display.errors += 1
+                    display.log(
+                        f"[red]✗[/red] {escape(name)} [dim]— {reason} on Humble[/dim]\n"
+                        f"    [dim]{humble_order_url(key)}[/dim]"
+                    )
+                    live.update(display.build())
+                    continue
+
                 # Reveal unrevealed keys on Humble
                 if "redeemed_key_val" not in key:
                     display.set_current(name, "[dim]Revealing key on Humble…[/dim]")
@@ -319,7 +333,7 @@ def redeem_steam_keys(
 
                 # Invalid key format
                 if not valid_steam_key(key["redeemed_key_val"]):
-                    kfm.write_key(1, key)
+                    kfm.write_key(1, key, reason="invalid key format")
                     display.errors += 1
                     display.log(
                         f"[red]✗[/red] {escape(name)} [dim]— invalid key format[/dim]\n"
