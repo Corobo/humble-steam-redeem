@@ -12,6 +12,7 @@ from requests_futures.sessions import FuturesSession
 
 from src.chooser import humble_chooser_mode
 from src.export import export_mode
+from src.owned_export import owned_export_mode
 from src.humble_api import HUMBLE_ORDER_DETAILS_API, HUMBLE_ORDERS_API
 from src.redeemer import redeem_steam_keys
 from src.utils import (
@@ -24,7 +25,12 @@ from src.utils import (
     prompt_menu,
 )
 
-_MODES = ["Auto-Redeem", "Export keys", "Humble Choice chooser"]
+_MODES = [
+    "Auto-Redeem",
+    "Export keys",
+    "Humble Choice chooser",
+    "Export owned Steam games",
+]
 
 
 def prompt_mode() -> str:
@@ -146,6 +152,9 @@ def main(argv: list[str] | None = None) -> None:
             sys.exit()
         if desired_mode == "3":
             humble_chooser_mode(humble_session, order_details)
+            sys.exit()
+        if desired_mode == "4":
+            owned_export_mode()
             sys.exit()
 
     # Auto-Redeem mode

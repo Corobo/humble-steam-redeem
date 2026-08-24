@@ -33,3 +33,4 @@ Thumbs.db
 *.swp
 .venv/
 unverifiable.txt
+owned_steam_*.csv

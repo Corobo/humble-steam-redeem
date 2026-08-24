@@ -12,6 +12,8 @@ Bulk-redeem your Humble Bundle Steam keys automatically. Detects games you alrea
 
 **Humble Choice Chooser** — Interactive month-by-month selector for picking unredeemed Humble Choice games. Shows ratings, lets you pick by number, and optionally auto-redeems the keys on Steam after choosing.
 
+**Export owned Steam games** — Dump your Steam library (app id + name) to a timestamped CSV. This is exactly the list Auto-Redeem matches Humble keys against, so it's handy for checking why a key was (or wasn't) skipped.
+
 ## How It Works
 
 1. Signs into Humble Bundle (credentials or saved session). If Humble Guard is enabled on your account, you'll be emailed a code to enter.
@@ -176,6 +178,7 @@ When ownership data is available, Auto-Redeem now skips already-revealed keys wi
 | `redeemed.csv` | Successfully redeemed keys |
 | `already_owned.csv` | Keys skipped (already owned or used elsewhere) |
 | `errored.csv` | Keys that failed (region locked, invalid, etc.) |
+| `owned_steam_*.csv` | Your Steam library as seen by the ownership check (Export owned Steam games mode) |
 | `skipped.txt` | Games with uncertain ownership (edit and rerun to retry) |
 | `unverifiable.txt` | Revealed keys with no Steam app id, skipped because ownership can't be verified |
 
