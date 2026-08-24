@@ -124,11 +124,11 @@ def match_ownership(
     """Fuzzy-match *game* against owned apps. Returns (score, appid) or (0, None)."""
     threshold = 70
     matches = [
-        (fuzz.token_set_ratio(appname, game["human_name"]), appid)
+        (fuzz.token_set_ratio(appname, game.get("human_name", "")), appid)
         for appid, appname in owned_app_details.items()
     ]
     refined_matches = [
-        (fuzz.token_sort_ratio(owned_app_details[appid], game["human_name"]), appid)
+        (fuzz.token_sort_ratio(owned_app_details[appid], game.get("human_name", "")), appid)
         for score, appid in matches
         if score > threshold
     ]

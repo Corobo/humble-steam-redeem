@@ -188,7 +188,7 @@ def redeem_steam_keys(
             for game in noted_keys:
                 best_match = match_ownership(owned_app_details, game)
                 if best_match[1] is not None and best_match[1] in owned_app_details:
-                    skipped_games[game["human_name"].strip()] = game
+                    skipped_games[game.get("human_name", "").strip()] = game
                 else:
                     unowned_games.append(game)
 
@@ -250,7 +250,7 @@ def redeem_steam_keys(
     with Live(display.build(), console=console, refresh_per_second=4) as live:
         with KeyFileManager() as kfm:
             for key in unowned_games:
-                name = key["human_name"]
+                name = key.get("human_name") or key.get("machine_name") or str(key.get("steam_app_id", "?"))
                 display.set_current(name)
                 live.update(display.build())
 
