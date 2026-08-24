@@ -52,6 +52,12 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="With --auto: reveal and redeem unrevealed keys even without "
         "ownership data. Default is to skip unrevealed keys to preserve gift links.",
     )
+    parser.add_argument(
+        "--try-unverifiable",
+        action="store_true",
+        help="Also attempt already-revealed keys that have no Steam app id "
+        "(ownership can't be checked; usually old bundle keys already used).",
+    )
     return parser.parse_args(argv)
 
 
@@ -175,7 +181,11 @@ def main(argv: list[str] | None = None) -> None:
     console.print()
 
     redeem_steam_keys(
-        humble_session, steam_keys, auto=args.auto, reveal_all=args.reveal_all
+        humble_session,
+        steam_keys,
+        auto=args.auto,
+        reveal_all=args.reveal_all,
+        try_unverifiable=args.try_unverifiable,
     )
 
 

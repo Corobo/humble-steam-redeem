@@ -165,6 +165,7 @@ def redeem_steam_keys(
     *,
     auto: bool = False,
     reveal_all: bool = False,
+    try_unverifiable: bool = False,
 ) -> None:
     """Full auto-redeem pipeline: Steam login, ownership check, redeem with rate-limit handling."""
     session = steam_login(auto=auto)
@@ -185,10 +186,23 @@ def redeem_steam_keys(
             skipped_games: dict[str, dict] = {}
             unowned_games: list[dict] = []
 
+            unverifiable: list[dict] = []
+
             for game in noted_keys:
                 best_match = match_ownership(owned_app_details, game)
                 if best_match[1] is not None and best_match[1] in owned_app_details:
                     skipped_games[game.get("human_name", "").strip()] = game
+                elif (
+                    game.get("steam_app_id") is None
+                    and "redeemed_key_val" in game
+                    and not try_unverifiable
+                ):
+                    # Old bundle-style keys (e.g. "Humble Indie Bundle #3 Steam
+                    # Key") carry no appid, so ownership can't be checked. They
+                    # were revealed long ago and are almost always already used
+                    # on Steam — each attempt burns the ~10/hour failed-key
+                    # budget. Skip them unless explicitly asked to try.
+                    unverifiable.append(game)
                 else:
                     unowned_games.append(game)
 
@@ -198,6 +212,22 @@ def redeem_steam_keys(
 
         if skipped_games:
             write_skipped(skipped_games)
+
+        if unverifiable:
+            with open("unverifiable.txt", "w", encoding="utf-8-sig") as f:
+                for game in unverifiable:
+                    f.write(
+                        f"{game.get('human_name', game.get('machine_name', '?'))}"
+                        f"\t{game.get('redeemed_key_val', '')}\n"
+                    )
+            print_warning(
+                f"Skipped [bold]{len(unverifiable)}[/bold] revealed keys with no Steam "
+                f"app id (ownership can't be verified, probably already used)."
+            )
+            print_info(
+                "Listed in [cyan]unverifiable.txt[/cyan] — rerun with "
+                "[bold]--try-unverifiable[/bold] to attempt them anyway."
+            )
     else:
         # No ownership data — warn and let user decide
         revealed = [k for k in humble_keys if "redeemed_key_val" in k]

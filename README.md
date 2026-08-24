@@ -124,6 +124,7 @@ Redeem new keys every 6 hours:
 |------|-------------|
 | `--auto` | Non-interactive mode — requires valid saved sessions in `.state/` |
 | `--reveal-all` | With `--auto`: reveal and redeem unrevealed keys even without ownership data. By default, `--auto` only redeems already-revealed keys to preserve gift links for games you might want to give away. Use this flag if you don't care about gift links and want everything redeemed. |
+| `--try-unverifiable` | Also attempt already-revealed keys that have no Steam app id (see [Unverifiable keys](#unverifiable-keys)). |
 
 ## Portable Binary
 
@@ -162,6 +163,12 @@ pyinstaller steam-redeemer.spec
 
 Steam enforces strict activation limits (~50 successful / ~10 failed keys per hour). The auto-redeemer detects rate limiting and automatically waits 1 hour before retrying. Ownership detection helps minimize wasted attempts.
 
+### Unverifiable keys
+
+Old bundle-style keys (e.g. *"Humble Indie Bundle #3 Steam Key"*) carry no Steam app id and their name doesn't match any game, so ownership can't be checked. If they were revealed long ago they're almost always already used on Steam — and every attempt burns the ~10/hour *failed* activation budget, tripping the rate limit after a handful of keys.
+
+When ownership data is available, Auto-Redeem now skips already-revealed keys with no app id and lists them in `unverifiable.txt` for manual review. Pass `--try-unverifiable` to attempt them anyway. Unrevealed keys are never skipped by this rule — a key that was never revealed can't have been used.
+
 ## Output Files
 
 | File | Contents |
@@ -170,6 +177,7 @@ Steam enforces strict activation limits (~50 successful / ~10 failed keys per ho
 | `already_owned.csv` | Keys skipped (already owned or used elsewhere) |
 | `errored.csv` | Keys that failed (region locked, invalid, etc.) |
 | `skipped.txt` | Games with uncertain ownership (edit and rerun to retry) |
+| `unverifiable.txt` | Revealed keys with no Steam app id, skipped because ownership can't be verified |
 
 These files are also used to filter keys on subsequent runs so you don't re-attempt the same keys.
 
