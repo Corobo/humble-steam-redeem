@@ -26,6 +26,15 @@ from src.utils import (
     write_skipped,
 )
 
+# Humble library page for a given order — handy for checking failed keys by hand
+HUMBLE_ORDER_PAGE = "https://www.humblebundle.com/downloads?key="
+
+
+def humble_order_url(key: dict[str, Any]) -> str:
+    """Return the Humble downloads page URL for the order that owns *key*."""
+    return f"{HUMBLE_ORDER_PAGE}{key.get('gamekey', '')}"
+
+
 # Short labels for error codes (used in the compact status display)
 _SHORT_ERRORS: dict[int, str] = {
     9: "already owned",
@@ -93,7 +102,9 @@ class KeyFileManager:
         human_name = key.get("human_name", "").replace(",", ".")
         gamekey = key.get("gamekey", "")
         redeemed_key_val = key.get("redeemed_key_val", "")
-        self._files[filename].write(f"{gamekey},{human_name},{redeemed_key_val}\n")
+        self._files[filename].write(
+            f"{gamekey},{human_name},{redeemed_key_val},{humble_order_url(key)}\n"
+        )
         self._files[filename].flush()
 
 
@@ -310,7 +321,10 @@ def redeem_steam_keys(
                 if not valid_steam_key(key["redeemed_key_val"]):
                     kfm.write_key(1, key)
                     display.errors += 1
-                    display.log(f"[red]✗[/red] {escape(name)} [dim]— invalid key format[/dim]")
+                    display.log(
+                        f"[red]✗[/red] {escape(name)} [dim]— invalid key format[/dim]\n"
+                        f"    [dim]{humble_order_url(key)}[/dim]"
+                    )
                     live.update(display.build())
                     continue
 
@@ -348,7 +362,10 @@ def redeem_steam_keys(
                 else:
                     display.errors += 1
                     short = _SHORT_ERRORS.get(code, f"error {code}")
-                    display.log(f"[red]✗[/red] {escape(name)} [dim]— {short}[/dim]")
+                    display.log(
+                        f"[red]✗[/red] {escape(name)} [dim]— {short}[/dim]\n"
+                        f"    [dim]{humble_order_url(key)}[/dim]"
+                    )
 
                 kfm.write_key(code, key)
                 display.set_current(name)
